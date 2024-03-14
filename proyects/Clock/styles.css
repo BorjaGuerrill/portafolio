@@ -1,0 +1,103 @@
+*, *::after, *::before {
+  /*allows you to insert content onto a page without it needing
+  to be in the HTML. While the end result is not actually in the DOM,
+  it appears on the page as if it is*/
+  box-sizing: border-box;
+  /*tells the browser to account for any border and
+  padding in the values you specify for an element's width and height. */
+  font-family: Gotham Rounded, sans-serif;
+}
+
+body {
+  background: linear-gradient(to right, rgb(255, 0, 0), rgb(0, 17, 255)); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;  /*Min height 100vh means the element should occupy the web browser viewport height*/
+  overflow: hidden;
+}
+
+.clock {
+  width: 800px;
+  height: 800px;
+  /*We want our clock to have all equal sides. */
+  background-color: rgba(0, 238, 255, 0.8);
+  /*RGBA color values are an extension of RGB color values with an alpha channel
+  - which specifies the opacity for a color.*/
+  /*An RGBA color value is specified with: rgba(red, green, blue, alpha).
+  The alpha parameter is a number between 0.0 (fully transparent) and 1.0 (fully opaque) */
+  border-radius: 50%;
+  /*It will round all the corners and make a perfect circle*/
+  border: 2px solid rgb(0, 0, 0);
+  position: relative;
+}
+
+.clock .number {
+  --rotation: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transform: rotate(var(--rotation));  /*this will position our numbers on the clock */
+  font-size: 1.5rem;
+}
+/*We rotate each number to the correct position */
+.clock .number1 { --rotation: 30deg; }
+.clock .number2 { --rotation: 60deg; }
+.clock .number3 { --rotation: 90deg; }
+.clock .number4 { --rotation: 120deg; }
+.clock .number5 { --rotation: 150deg; }
+.clock .number6 { --rotation: 180deg; }
+.clock .number7 { --rotation: 210deg; }
+.clock .number8 { --rotation: 240deg; }
+.clock .number9 { --rotation: 270deg; }
+.clock .number10 { --rotation: 300deg; }
+.clock .number11 { --rotation: 330deg; }
+
+
+.clock .hand {
+  --rotation: 0;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  border: 1px solid white;
+  border-top-left-radius: 10px;/*it rounds the end of the clock hand */
+  border-top-right-radius: 10px;
+  transform-origin: bottom;/*where we want the transform to come from*/
+  z-index: 10;/*Sets the clock hands on top of the numbers.
+  The z-index CSS property sets the z-order of a positioned element and its descendants or flex items */
+  transform: translateX(-50%) rotate(calc(var(--rotation) * 1deg));
+   /*Sets the clock hads center on top */
+
+}
+
+.clock::after {   /*Sets center circle on the clock */
+  content: '';
+  position: absolute;
+  background-color: black;
+  z-index: 11;
+  width: 15px;
+  height: 15px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+.clock .hand.second { /*Sets the seconds clock hand */
+  width: 3px;
+  height: 45%;
+  background-color: rgb(0, 255, 0);
+}
+
+.clock .hand.minute { /*Sets the minute clock hand */
+  width: 7px;
+  height: 40%;
+  background-color: rgb(255, 251, 0);
+}
+
+.clock .hand.hour { /*Sets the hour clock hand */
+  width: 10px;
+  height: 35%;
+  background-color: rgb(255, 238, 0);
+}
