@@ -1,0 +1,139 @@
+* {
+    margin: 0%;
+    border: 0%;
+    padding: 0%;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    background: linear-gradient(black, black, black, rgb(60, 60, 60), rgb(60, 60, 60));
+    height: 100%;
+}
+
+#header {
+    display: flex;
+    /* background-color: rgb(60, 60, 60); */
+    background-color: black;
+    margin: 0%;
+    padding: 0%;
+}
+
+.header-text {
+    margin: 30px;
+    color: rgb(60, 60, 60);
+    font-size: 30px;
+}
+a.header-text{
+    color:rgb(60, 60, 60);
+}
+iframe {
+    margin: 0%;
+    padding: 0%;
+    border: none;
+}
+
+h2 {
+    text-align: center;
+    font-size: 70px;
+    color: white;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+#proyects {
+    margin: auto;
+    width: 60%;
+    padding: 10px;
+    display: flex;
+}
+
+.align-text {
+    text-align: center;
+}
+
+p {
+    color: white;
+}
+
+#proyects1 {
+    padding-right:30px;
+}
+
+#proyects2 {
+    padding-right: 30px;
+    padding-left:30px;
+    border-right: 2px;
+    border-left: 2px;
+    border-right-style: solid;
+    border-left-style: solid;
+}
+#proyects3{
+    padding-left:30px;
+}
+.proyects-main-text {
+    color: dimgrey;
+    text-align: center;
+    font-family: monospace;
+    font-size: 28px
+}
+
+.proyects-general-text {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.proyects-secondary-text {
+    font-size: 20px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+a.proyects-general-text {
+    color: skyblue;
+    text-decoration-thickness: 1px !important;
+    text-decoration-style: double !important;
+    text-decoration-color: blue !important;
+    text-decoration-line: underline !important;
+}
+
+.proyect-button {
+    background-color: burlywood;
+    color: royalblue;
+    font-weight: 900;
+    border-radius: 30vh;
+    width: 180px;
+    height: 50px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-style:ridge;
+    margin-top:20px;
+}
+.proyect-button:hover{
+    background-color:RGB(240, 189, 126);
+    color:#6370B6;
+    border-style:dashed;
+    border-width: 1px;
+}
+h3{
+    text-align:center;
+    font-size:x-large;
+    font-family: sans-serif;
+}
+#access-code{
+    margin-left:auto;
+    margin-right:auto;display:block;
+}
+#blog{
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+    font-size:50px;
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+    width:33%;
+    height:20%;
+    background-color:orange;
+}
