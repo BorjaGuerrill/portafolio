@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Flight Simulator</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <link rel="icon" type="image/png" href="../flight.jpeg">
+</head>
+  <header><h1>Plane simulator!</h1></header>
+  <p>Use WASD to move around, I to accelerate K to desaccelerate, use QE to use the rudder, and use J to fire. Enjoy the flight! :)</p>
+  <body>
+    <!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <!--<button id="sensor_contents">push</button>-->
+  <canvas id="main" width="800" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById("main");
+resizeWindow();
+window.addEventListener("resize",resizeWindow);
+function resizeWindow() {
+	let screen_height = window.innerHeight;
+	screen_height *= 0.9;
+	let screen_width = window.innerWidth;
+	screen_width *= 0.9;
+	
+	if ((screen_height/screen_width) > 0.75) {
+		//縦のほうが長い
+    canvas.style.width = screen_width + "px";
+    canvas.style.height = (screen_width * 0.75) + "px";
+	}else{
+		//横の方が長い
+    canvas.style.width = (screen_height * 1.3333) + "px";
+    canvas.style.height = screen_height + "px";
+	}
+}
+  </script>
+  <script>function drawGround1() {
+  let object = ground;
+  //カメラから見た相対座標に変換
+  let relativeVertexes = [];
+  for(let j = 0; j < object.vertexes.length; j++) {
+    let vertex = Object.assign({},object.vertexes[j]);
+    vertex.x -= cam.x;
+    vertex.y -= cam.y;
+    vertex.z -= cam.z;
+    vertex = rotate(cam.axis,vertex,-cam.rad);
+    relativeVertexes.push(vertex);
+  }
+  //描く
+  
+  for (let j = 0; j < object.faces.length; j++) {
+    ctx.beginPath();
+    let began = false;
+    
+    for (let k = 0; k < object.faces[j].length; k++) {
+      let p1;
+      let p2;
+      if (k === (object.faces[j].length-1)) {
+        p1 = Object.assign({},relativeVertexes[object.faces[j][k]]);
+        p2 = Object.assign({},relativeVertexes[object.faces[j][0]]);
+      }else{
+        p1 = Object.assign({},relativeVertexes[object.faces[j][k]]);
+        p2 = Object.assign({},relativeVertexes[object.faces[j][k+1]]);
+      }
+      if (p1.z < 10 && p2.z > 10) {
+        p1.x += (p2.x-p1.x)*(10-p1.z)/(p2.z-p1.z);
+        p1.y += (p2.y-p1.y)*(10-p1.z)/(p2.z-p1.z);
+        p1.z = 10;
+      }else if (p1.z > 10 && p2.z < 10) {
+        p2.x += (p1.x-p2.x)*(10-p2.z)/(p1.z-p2.z);
+        p2.y += (p1.y-p2.y)*(10-p2.z)/(p1.z-p2.z);
+        p2.z = 10;
+      }
+      
+      if (p1.z > 0 && p2.z > 0) {
+        let screenP1 = {"x":p1.x*800/p1.z, "y":p1.y*800/p1.z}
+        let screenP2 = {"x":p2.x*800/p2.z, "y":p2.y*800/p2.z}
+        if (!began) {
+          ctx.moveTo(screenP1.x,-screenP1.y);
+          began = true;
+        }else{
+          ctx.lineTo(screenP1.x,-screenP1.y);
+        }
+        ctx.lineTo(screenP2.x,-screenP2.y);
+      }
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#669D34";
+    ctx.lineWidth = 0.5;
+    ctx.fill();
+  }
+}
+
+function drawGround2() {
+  let relativeVertexes = [];
+  for (let i = -30000; i < 30000; i += 500) {
+    let vertex1 = {"x":cam.x+i-((cam.x+200000000)%500),
+                   "y":0,
+                   "z":cam.z+Math.sqrt(30000**2 - (i)**2)};
+    vertex1.x -= cam.x;
+    vertex1.y -= cam.y;
+    vertex1.z -= cam.z;
+    vertex1 = rotate(cam.axis,vertex1,-cam.rad);
+    relativeVertexes.push(vertex1);
+    
+    let vertex2 = {"x":cam.x+i-((cam.x+200000000)%500),
+                   "y":0,
+                   "z":cam.z-Math.sqrt(30000**2 - (i)**2)};
+    vertex2.x -= cam.x;
+    vertex2.y -= cam.y;
+    vertex2.z -= cam.z;
+    vertex2 = rotate(cam.axis,vertex2,-cam.rad);
+    relativeVertexes.push(vertex2);
+  }
+  let polygons = [];
+  for (let i = 0; i < 119; i++) {
+    if ((i+Math.floor(cam.x/500))%2 === 0) {
+      polygons.push([i*2, (i+1)*2, (i+1)*2+1, "#96D35F"]);
+      polygons.push([(i+1)*2+1, i*2+1, i*2, "#96D35F"]);
+    }
+  }
+
+  let startI = polygons.length/2;
+  for (let i = -30000; i < 30000; i += 500) {
+    let vertex1 = {"z":cam.z+i-((cam.z+200000000)%500),
+                   "y":0,
+                   "x":cam.x+Math.sqrt(30000**2 - (i)**2)};
+    vertex1.x -= cam.x;
+    vertex1.y -= cam.y;
+    vertex1.z -= cam.z;
+    vertex1 = rotate(cam.axis,vertex1,-cam.rad);
+    relativeVertexes.push(vertex1);
+    
+    let vertex2 = {"z":cam.z+i-((cam.z+200000000)%500),
+                   "y":0,
+                   "x":cam.x-Math.sqrt(30000**2 - (i)**2)};
+    vertex2.x -= cam.x;
+    vertex2.y -= cam.y;
+    vertex2.z -= cam.z;
+    vertex2 = rotate(cam.axis,vertex2,-cam.rad);
+    relativeVertexes.push(vertex2);
+  }
+  for (let i = 120; i < 239; i++) {
+    if ((i+Math.floor(cam.z/500))%2 === 0) {
+      polygons.push([i*2, (i+1)*2, (i+1)*2+1, "#96D35F"]);
+      polygons.push([(i+1)*2+1, i*2+1, i*2, "#96D35F"]);
+    }
+  }
+
+  //描く
+  ctx.beginPath();
+  let startingPoint = {"x":"nan","y":0};
+  for (let i = 0; i < polygons.length; i++) {
+    let polygon = polygons[i];
+    let began = false;
+    for (let j = 0; j < 3; j++) {
+      let p1;
+      let p2;
+      if (j === 2) {
+        p1 = Object.assign({},relativeVertexes[polygon[2]]);
+        p2 = Object.assign({},relativeVertexes[polygon[0]]);
+      }else{
+        p1 = Object.assign({},relativeVertexes[polygon[j]]);
+        p2 = Object.assign({},relativeVertexes[polygon[j+1]]);
+      }
+      if (p1.z < 10 && p2.z > 10) {
+        p1.x += (p2.x-p1.x)*(10-p1.z)/(p2.z-p1.z);
+        p1.y += (p2.y-p1.y)*(10-p1.z)/(p2.z-p1.z);
+        p1.z = 10;
+      }else if (p1.z > 10 && p2.z < 10) {
+        p2.x += (p1.x-p2.x)*(10-p2.z)/(p1.z-p2.z);
+        p2.y += (p1.y-p2.y)*(10-p2.z)/(p1.z-p2.z);
+        p2.z = 10;
+      }
+      if (p1.z > 0 && p2.z > 0) {
+        let screenP1 = {"x":p1.x*800/p1.z, "y":p1.y*800/p1.z}
+        let screenP2 = {"x":p2.x*800/p2.z, "y":p2.y*800/p2.z}
+        if (!began) {
+          ctx.moveTo(screenP1.x,-screenP1.y);
+          if (startingPoint.x === "nan") {
+            startingPoint.x = screenP1.x;
+            startingPoint.y = screenP1.y;
+          }
+          began = true;
+        }else{
+          ctx.lineTo(screenP1.x,-screenP1.y);
+        }
+        ctx.lineTo(screenP2.x,-screenP2.y);
+      }
+    }
+  }
+  ctx.moveTo(startingPoint.x,-startingPoint.y);
+  ctx.lineTo(startingPoint.x+0.01,-startingPoint.y+0.01);
+  ctx.lineTo(startingPoint.x+0.01,-startingPoint.y-0.01);
+  ctx.fillStyle = "#96D35F";
+  ctx.fill("evenodd");
+}
+
+function draw() {
+  ctx.clearRect(-400,-(300),800,600);
+  ctx.fillStyle = "#93E3FD";
+  ctx.fillRect(-400,-(300),800,600);
+
+  drawGround1();
+  drawGround2();
+  
+  let relativeVertexes = [];
+  let polygons = [];
+  let arrToSort = [];
+  
+  for(let i = 0; i < objects.length; i++) {
+    if (objects[i].visible) {
+      //頂点リストの何番目からなのかを取っておく
+      let nowObjIdx = relativeVertexes.length;
+      //頂点（相対座標）をリストに片っ端から追加
+      let object = objects[i];
+      for(let j = 0; j < object.vertexes.length; j++) {
+        let vertex = Object.assign({},object.vertexes[j]);
+        vertex.x -= cam.x;
+        vertex.y -= cam.y;
+        vertex.z -= cam.z;
+        vertex = rotate(cam.axis,vertex,-cam.rad);
+        relativeVertexes.push(vertex);
+      }
+      //ポリゴン（もしくは点）の情報をリストに片っ端から追加
+      for (let j = 0; j < object.faces.length; j++) {
+        if (object.faces.length > 3) {
+          //ポリゴン
+          const p1 = relativeVertexes[nowObjIdx+object.faces[j][0]];
+          const p2 = relativeVertexes[nowObjIdx+object.faces[j][1]];
+          const p3 = relativeVertexes[nowObjIdx+object.faces[j][2]];
+          //すると見せかけて裏向いてるポリゴンは追加しない
+          const sightVec = {"x":p1.x,"y":p1.y,"z":p1.z};
+          const hors = vectorProduct({"x":p2.x-p1.x,"y":p2.y-p1.y,"z":p2.z-p1.z},
+                                    {"x":p3.x-p1.x,"y":p3.y-p1.y,"z":p3.z-p1.z})//表に生えるベクトル
+          const cos = (sightVec.x*hors.x+sightVec.y*hors.y+sightVec.z*hors.z)/(Math.sqrt(sightVec.x**2+sightVec.y**2+sightVec.z**2)*Math.sqrt(hors.x**2+hors.y**2+hors.z**2));
+          if (cos < 0) {
+            //順番決める用のz
+            let z;
+            if (cos > -0.707) {
+              z = (10 * Math.max(p1.z,p2.z,p3.z) + (p1.z+p2.z+p3.z)/3)/11;
+            }else{
+              z = (p1.z+p2.z+p3.z)/3;
+            }
+            //明暗
+            const lightVec = rotate(cam.axis,{"x":-1,"y":-5,"z":-1},-cam.rad);
+            const cos2 = (lightVec.x*hors.x+lightVec.y*hors.y+lightVec.z*hors.z)/(Math.sqrt(lightVec.x**2+lightVec.y**2+lightVec.z**2)*Math.sqrt(hors.x**2+hors.y**2+hors.z**2));
+            const coef = 0.875-cos2/8;
+            //const color = object.faces[j][3];
+            const oc = getRGB(object.faces[j][3]);//元々の色
+            const color = "rgb("+(oc.r*coef)+","+(oc.g*coef)+","+(oc.b*coef)+")";
+            //追加
+            polygons.push([nowObjIdx+object.faces[j][0], nowObjIdx+object.faces[j][1], nowObjIdx+object.faces[j][2], z, color]);
+            arrToSort.push([-z,polygons.length-1]);
+          }
+        }else{
+          //点
+          const p = relativeVertexes[nowObjIdx+object.faces[j][0]];
+          polygons.push([nowObjIdx+object.faces[j][0], object.faces[j][1], p.z, object.faces[j][2]]);
+          arrToSort.push([-p.z,polygons.length-1]);
+        }
+        
+      }
+    }
+  }
+  arrToSort = sort(arrToSort);
+  //描く
+  for (let i = 0; i < polygons.length; i++) {
+    let polygon = polygons[arrToSort[i][1]];
+    if (polygon.length > 4) {
+      //ポリゴン
+      let began = false;
+      ctx.beginPath();
+      for (let j = 0; j < 3; j++) {
+        let p1;
+        let p2;
+        if (j === 2) {
+          p1 = Object.assign({},relativeVertexes[polygon[2]]);
+          p2 = Object.assign({},relativeVertexes[polygon[0]]);
+        }else{
+          p1 = Object.assign({},relativeVertexes[polygon[j]]);
+          p2 = Object.assign({},relativeVertexes[polygon[j+1]]);
+        }
+        if (p1.z < 10 && p2.z > 10) {
+          p1.x += (p2.x-p1.x)*(10-p1.z)/(p2.z-p1.z);
+          p1.y += (p2.y-p1.y)*(10-p1.z)/(p2.z-p1.z);
+          p1.z = 10;
+        }else if (p1.z > 10 && p2.z < 10) {
+          p2.x += (p1.x-p2.x)*(10-p2.z)/(p1.z-p2.z);
+          p2.y += (p1.y-p2.y)*(10-p2.z)/(p1.z-p2.z);
+          p2.z = 10;
+        }
+        if (p1.z > 0 && p2.z > 0) {
+          let screenP1 = {"x":p1.x*800/p1.z, "y":p1.y*800/p1.z}
+          let screenP2 = {"x":p2.x*800/p2.z, "y":p2.y*800/p2.z}
+          if (!began) {
+            ctx.moveTo(screenP1.x,-screenP1.y);
+            began = true;
+          }else{
+            ctx.lineTo(screenP1.x,-screenP1.y);
+          }
+          ctx.lineTo(screenP2.x,-screenP2.y);
+        }
+      }
+      ctx.closePath();
+      ctx.fillStyle = polygon[4];
+      ctx.strokeStyle = polygon[4];
+      ctx.fill();
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }else{
+      //点
+      ctx.beginPath();
+      const p = Object.assign({},relativeVertexes[polygon[0]]);
+      if (p.z > 10) {      
+        let screenP = {"x":p.x*800/p.z, "y":p.y*800/p.z}
+        ctx.moveTo(screenP.x,-screenP.y);
+        ctx.arc(screenP.x, -screenP.y, polygon[1]*800/p.z, 0, 2*Math.PI)
+        ctx.fillStyle = polygon[3];
+        ctx.fill();
+      }
+    }
+  }
+  //各種データ
+  drawMiniMap();
+  ctx.font = "20px serif";
+  ctx.fillStyle = "black";
+  ctx.fillText("speed: "+ Math.round(aircraft.speed.z), -350, -(200));
+  ctx.fillText("y: "+ Math.round(aircraft.y), -350, -(150));
+  ctx.fillText("throttle: "+ Math.round(aircraft.throttle*100)/100, -350, -(100));
+}
+
+function drawMiniMap() {
+  ctx.fillStyle = "black";
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
+  ctx.fillRect(-370,-(-120),150,150);
+  ctx.strokeRect(-370,-(-120),150,150);
+  //-370から-220,-120から-270
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-295,-(-120));
+  ctx.lineTo(-295,-(-270));
+  ctx.moveTo(-370,-(-195));
+  ctx.lineTo(-220,-(-195));
+  ctx.stroke();
+  let targetsOnMap = [];
+  for (let i = 0; i < targets.length; i++) {
+    const target = targets[i];
+    let relTarget = {"x":target.x-aircraft.x, "y":target.y-aircraft.y, "z":target.z-aircraft.z};
+    relTarget = rotate(aircraft.axis,relTarget,-aircraft.rad);
+    targetsOnMap.push({"x":relTarget.x,"z":relTarget.z});
+  }
+  ctx.fillStyle = "white";
+  for(let i = 0; i < targetsOnMap.length; i++) {
+    const pos = targetsOnMap[i];
+    if (pos.z > 15000 && Math.abs(pos.x) < pos.z) {
+      //上にはみ出している
+      pos.x = pos.x * (15000/pos.z);
+      pos.z = 15000;
+    }else if (pos.z < -15000 && Math.abs(pos.x) < -pos.z) {
+      //下にはみ出している
+      pos.x = pos.x * (-15000/pos.z);
+      pos.z = -15000;
+    }else if (pos.x < -15000 && Math.abs(pos.z) < -pos.x) {
+      //左にはみ出している
+      pos.z = pos.z * (-15000/pos.x);
+      pos.x = -15000;
+    }else if (pos.x > 15000 && Math.abs(pos.z) < pos.x) {
+      //右にはみ出している
+      pos.z = pos.z * (15000/pos.x);
+      pos.x = 15000;
+    }
+    ctx.fillRect(-295+(pos.x*0.005)-2.5,-(-195+(pos.z*0.005)+2.5),5,5);
+  }
+}
+
+function drawGameOver() {
+  ctx.clearRect(-400,-(300),800,600);
+  ctx.fillStyle = "#93E3FD";
+  ctx.fillRect(-400,-(300),800,600);
+  
+  ctx.font = "50px serif";
+  ctx.fillStyle = "black";
+  ctx.textAlign = "center"
+  ctx.fillText("YOU CRASHED", 0, -(0));
+}
+
+
+function sort(arr) {
+  if (arr.length < 2) {
+    return arr;
+  }
+
+  let middle = Math.floor(arr.length / 2);
+  let left = arr.slice(0, middle);
+  let right = arr.slice(middle);
+
+  return merge(sort(left), sort(right));
+}
+
+function merge(left, right) {
+  let result = [];
+  let i = 0;
+  let j = 0;
+
+  while (i < left.length && j < right.length) {
+    if (left[i][0] < right[j][0]) {
+      result.push(left[i++]);
+    } else {
+      result.push(right[j++]);
+    }
+  }
+
+  return result.concat(left.slice(i)).concat(right.slice(j));
+}
+
+function getRGB(colorCode) {
+  const split = colorCode.split("");
+  const r = parseInt(split[1]+split[2],16);
+  const g = parseInt(split[3]+split[4],16);
+  const b = parseInt(split[5]+split[6],16);
+  return {"r":r,"g":g,"b":b};
+}</script>
+  <script>
+    //ジャイロ関係
+if(window.DeviceOrientationEvent){
+  // ★iOS13向け: ユーザーにアクセスの許可を求める関数があるか？
+  if(DeviceOrientationEvent.requestPermission){
+      var sensor_contents= document.getElementById("sensor_contents");
+      // id="sensor_contents" な要素がクリックされたら
+      sensor_contents.addEventListener("click", function(){
+          // ★ジャイロセンサーのアクセス許可をリクエストする
+          DeviceOrientationEvent.requestPermission().then(function(response){
+              // リクエストが許可されたら
+              if(response === "granted"){
+                  // deviceorientationが有効化される
+              }
+          }).catch(function(e){
+              console.log(e);
+          });
+				
+      });
+  // iOS13以外
+  }else{
+      // 何もしない
+  }
+}
+// ジャイロの処理
+
+let gyroData = {
+  "x":0,
+  "y":0,
+  "z":0
+}
+
+addEventListener("deviceorientation", (event) => {
+  gyroData.x = event.alpha;
+  gyroData.y = event.gamma;
+  gyroData.z = event.alpha;
+
+}, true);
+
+
+
+function ctrWithGyro() {
+  aircraft.elevator = 0;
+  const a = Math.PI/4;
+  if (Math.abs(gyroData.x) > a) {
+    if (gyroData.x > a) {
+      aircraft.elevator = 1;
+    }else{
+      aircraft.elevator = -1;
+    }
+  }else{
+    aircraft.elevator = gyroData.x/a;
+  }
+}
+  </script>
+  <script>
+    var key = {
+	"up":false,
+	"down":false,
+	"left":false,
+	"right":false,
+	"space":false,
+	"shift":false,
+	"z":false,
+	"x":false,
+	"c":false,
+  "w":false,
+  "a":false,
+  "s":false,
+  "d":false,
+  "q":false,
+  "e":false,
+  "i":false,
+  "k":false,
+  "j":false
+};
+var afnc = {
+	"ArrowUp":"up",
+	"ArrowDown":"down",
+	"ArrowLeft":"left",
+	"ArrowRight":"right",
+	"Shift":"shift",
+	"z":"z",
+	"x":"x",
+	"c":"c",
+  "w":"w",
+  "a":"a",
+  "s":"s",
+  "d":"d",
+  "q":"q",
+  "e":"e",
+  "i":"i",
+  "k":"k",
+  "j":"j"
+}
+
+//キー入力の判定プログラム in 折りたたみ用if文
+if (true) {
+	window.addEventListener('keydown', event => {
+		if (event.key === " ") {
+			key.space = true;
+		}else if (event.key !== "undefined") {
+			key[afnc[event.key]] = true;
+		}
+	});
+
+	window.addEventListener('keyup', event => {
+		if (event.key === " ") {
+			key.space = false;
+		}else if (event.key !== "undefined") {
+			key[afnc[event.key]] = false;
+		}
+	});
+}
+  </script>
+  <script>
+    class Cube {
+  constructor(x,y,z,oneSide) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.visible = true;
+    this.oneSide = oneSide;
+    
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(this.x+this.oneSide/2, this.y+this.oneSide/2, this.z+this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x-this.oneSide/2, this.y+this.oneSide/2, this.z+this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x-this.oneSide/2, this.y-this.oneSide/2, this.z+this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x+this.oneSide/2, this.y-this.oneSide/2, this.z+this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x+this.oneSide/2, this.y+this.oneSide/2, this.z-this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x-this.oneSide/2, this.y+this.oneSide/2, this.z-this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x-this.oneSide/2, this.y-this.oneSide/2, this.z-this.oneSide/2));
+    this.vertexes.push(new Vertex(this.x+this.oneSide/2, this.y-this.oneSide/2, this.z-this.oneSide/2));
+    
+    this.edges = [];
+
+    this.faces = [];
+    this.faces.push([0,1,2,"#000000"]);
+    this.faces.push([2,3,0,"#000000"]);
+    this.faces.push([5,4,7,"#000000"]);
+    this.faces.push([7,6,5,"#000000"]);
+    this.faces.push([1,0,4,"#000000"]);
+    this.faces.push([4,5,1,"#000000"]);
+    this.faces.push([1,5,6,"#000000"]);
+    this.faces.push([6,2,1,"#000000"]);
+    this.faces.push([6,7,3,"#000000"]);
+    this.faces.push([3,2,6,"#000000"]);
+    this.faces.push([4,0,3,"#000000"]);
+    this.faces.push([3,7,4,"#000000"]);
+  }
+}
+
+class Bullet {
+  constructor(x,y,z,vec) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.visible = true;
+    this.vec = vec;
+    this.alive = true;
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(this.x,this.y,this.z));
+    
+    this.edges = [];
+
+    this.faces = [];
+    this.faces.push([0,10,"#000000"]);
+  }
+}
+
+class Blast {
+  constructor(x,y,z,r,size) {
+    this.center = {
+      "x":x,
+      "y":y,
+      "z":z
+    }
+    this.x = this.center.x;
+    this.y = this.center.y;
+    this.z = this.center.z;
+    this.size = size;
+    this.visible = true;
+    this.vec = {"x":0,"y":0,"z":1};
+    this.vec = rotate({"x":1,"y":0,"z":0},this.vec,Math.random()*Math.PI*2);
+    this.vec = rotate({"x":0,"y":1,"z":0},this.vec,Math.random()*Math.PI*2);
+    this.vec = rotate({"x":0,"y":0,"z":1},this.vec,Math.random()*Math.PI*2);
+    this.vec.x *= r;
+    this.vec.y *= r;
+    this.vec.z *= r;
+    this.prog = 0;
+    this.alive = true;
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(this.x,this.y,this.z));
+    
+    this.edges = [];
+
+    this.faces = [];
+    this.faces.push([0,this.size,"#FF0000"]);
+    
+  }
+}
+
+class Target {
+  constructor(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.visible = true;
+
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(0,282,0));
+    this.vertexes.push(new Vertex(-200,0,200));
+    this.vertexes.push(new Vertex(200,0,200));
+    this.vertexes.push(new Vertex(200,0,-200));
+    this.vertexes.push(new Vertex(-200,0,-200));
+    this.vertexes.push(new Vertex(0,-282,0));
+    for (let i = 0; i < this.vertexes.length; i++) {
+      this.vertexes[i].x += this.x;
+      this.vertexes[i].y += this.y;
+      this.vertexes[i].z += this.z;
+    }
+    
+    this.faces = [];
+    this.faces.push([0,1,2,"#FF0000"]);
+    this.faces.push([0,2,3,"#FF0000"]);
+    this.faces.push([0,3,4,"#FF0000"]);
+    this.faces.push([0,4,1,"#FF0000"]);
+    this.faces.push([5,2,1,"#FF0000"]);
+    this.faces.push([5,3,2,"#FF0000"]);
+    this.faces.push([5,4,3,"#FF0000"]);
+    this.faces.push([5,1,4,"#FF0000"]);
+  }
+}
+
+class Cloud {
+  constructor(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(0,282,0));
+    this.vertexes.push(new Vertex(-1000,0,1000));
+    this.vertexes.push(new Vertex(1000,0,1000));
+    this.vertexes.push(new Vertex(1000,0,-1000));
+    this.vertexes.push(new Vertex(-1000,0,-1000));
+    this.vertexes.push(new Vertex(0,-282,0));
+    for (let i = 0; i < this.vertexes.length; i++) {
+      this.vertexes[i].x += this.x;
+      this.vertexes[i].y += this.y;
+      this.vertexes[i].z += this.z;
+    }
+    
+    this.faces = [];
+    this.faces.push([0,1,2,"#FFFFFF"]);
+    this.faces.push([0,2,3,"#FFFFFF"]);
+    this.faces.push([0,3,4,"#FFFFFF"]);
+    this.faces.push([0,4,1,"#FFFFFF"]);
+    this.faces.push([5,2,1,"#FFFFFF"]);
+    this.faces.push([5,3,2,"#FFFFFF"]);
+    this.faces.push([5,4,3,"#FFFFFF"]);
+    this.faces.push([5,1,4,"#FFFFFF"]);
+  }
+}
+
+class Tree {
+  constructor(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.visible = true;
+
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(0,30,0));
+    this.vertexes.push(new Vertex(0,-30,5));
+    this.vertexes.push(new Vertex(4.33,-30,-2.5));
+    this.vertexes.push(new Vertex(-4.33,-30,-2.5));
+    this.vertexes.push(new Vertex(0,-10,20));
+    this.vertexes.push(new Vertex(17.32,-10,-10));
+    this.vertexes.push(new Vertex(-17.32,-10,-10));
+    for (let i = 0; i < this.vertexes.length; i++) {
+      this.vertexes[i].x += this.x;
+      this.vertexes[i].y += this.y;
+      this.vertexes[i].z += this.z;
+    }
+    
+    this.edges = [];
+    
+    this.faces = [];
+    this.faces.push([0,1,2,"#D38301"]);
+    this.faces.push([0,2,3,"#D38301"]);
+    this.faces.push([0,3,1,"#D38301"]);
+    this.faces.push([0,4,5,"#76BB40"]);
+    this.faces.push([0,5,6,"#76BB40"]);
+    this.faces.push([0,6,4,"#76BB40"]);
+    
+    
+  }
+}
+
+/*class Island {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(400,0,400));
+    this.vertexes.push(new Vertex(-400,0,400));
+    this.vertexes.push(new Vertex(-400,0,-400));
+    this.vertexes.push(new Vertex(400,0,-400));
+    this.vertexes.push(new Vertex(200,50,200));
+    this.vertexes.push(new Vertex(-200,50,200));
+    this.vertexes.push(new Vertex(-200,50,-200));
+    this.vertexes.push(new Vertex(200,50,-200));
+
+    this.edges = [];
+
+    this.faces = [];
+    this.faces.push([1,0,5,"#FFF6DC"]);
+    this.faces.push([5,0,4,"#FFF6DC"]);
+    this.faces.push([4,0,3,"#FFF6DC"]);
+    this.faces.push([4,3,7,"#FFF6DC"]);
+    this.faces.push([7,3,2,"#FFF6DC"]);
+    this.faces.push([7,2,6,"#FFF6DC"]);
+    this.faces.push([6,2,1,"#FFF6DC"]);
+    this.faces.push([6,1,5,"#FFF6DC"]);
+    this.faces.push([5,4,6,"#78DC00"]);
+    this.faces.push([7,6,4,"#78DC00"]);
+  }
+}
+
+class Island {
+  constructor()  {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.visible = true;
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(-5,90,40));
+    this.vertexes.push(new Vertex(234,60,-70));
+    this.vertexes.push(new Vertex(440,30,-343));
+    this.vertexes.push(new Vertex(393,0,-893));
+    this.vertexes.push(new Vertex(143,0,-1134));
+    this.vertexes.push(new Vertex(-251,0,-1015));
+    this.vertexes.push(new Vertex(-508,0,-709));
+    this.vertexes.push(new Vertex(-364,0,-443));
+    this.vertexes.push(new Vertex(-179,0,-350));
+    this.vertexes.push(new Vertex(-101,0,-617));
+    this.vertexes.push(new Vertex(-50,90,-580));
+    this.vertexes.push(new Vertex(-120,90,-200));
+    this.vertexes.push(new Vertex(-5,0,40));
+    this.vertexes.push(new Vertex(234,0,-70));
+    this.vertexes.push(new Vertex(440,0,-343));
+
+    this.edges = [];
+    
+    this.faces = [];
+    this.faces.push([11,0,10,"#78DC00"]);
+    this.faces.push([0,1,10,"#78DC00"]);
+    this.faces.push([1,2,10,"#78DC00"]);
+    this.faces.push([2,3,10,"#78DC00"]);
+    this.faces.push([3,4,9,"#FFF6DC"]);
+    this.faces.push([4,5,9,"#FFF6DC"]);
+    this.faces.push([5,6,9,"#FFF6DC"]);
+    this.faces.push([6,7,9,"#FFF6DC"]);
+    this.faces.push([7,8,9,"#FFF6DC"]);
+    this.faces.push([10,3,9,"#D19D01"]);
+    this.faces.push([10,9,8,"#D19D01"]);
+    this.faces.push([10,8,11,"#D19D01"]);
+    this.faces.push([0,11,8,"#D19D01"]);
+    this.faces.push([8,12,0,"#D19D01"]);
+    this.faces.push([1,0,12,"#D19D01"]);
+    this.faces.push([12,13,1,"#D19D01"]);
+    this.faces.push([2,1,13,"#D19D01"]);
+    this.faces.push([13,14,2,"#D19D01"]);
+    this.faces.push([2,14,3,"#D19D01"]);
+  }
+}
+
+class Aircraft {
+  constructor(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.axis = {"x":0,"y":1,"z":0};
+    this.rad = 0;
+
+    this.vertexes = [];
+
+    this.faces = [];
+    this.faces.push([1,0,3,"#FFFFFF"]);
+    this.faces.push([3,2,1,"#FFFFFF"]);
+    this.faces.push([0,1,5,"#FFFFFF"]);
+    this.faces.push([5,4,0,"#FFFFFF"]);
+    this.faces.push([1,2,5,"#FFFFFF"]);
+    this.faces.push([0,4,3,"#FFFFFF"]);
+    this.faces.push([2,7,5,"#FFFFFF"]);
+    this.faces.push([2,5,7,"#FFFFFF"]);
+    this.faces.push([3,4,6,"#FFFFFF"]);
+    this.faces.push([6,4,3,"#FFFFFF"]);
+    
+    this.recentPosture = [[{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,]];
+  }
+  update() {
+    this.vertexes = [];
+    this.vertexes.push(new Vertex(10,10,-20));
+    this.vertexes.push(new Vertex(-10,10,-20));
+    this.vertexes.push(new Vertex(-10,-10,-20));
+    this.vertexes.push(new Vertex(10,-10,-20));
+    this.vertexes.push(new Vertex(10,-10,20));
+    this.vertexes.push(new Vertex(-10,-10,20));
+    this.vertexes.push(new Vertex(20,-10,-20));
+    this.vertexes.push(new Vertex(-20,-10,-20));
+    for (let i = 0; i < this.vertexes.length; i++) {
+      this.vertexes[i] = rotate(this.axis,this.vertexes[i],this.rad);
+      this.vertexes[i].x += this.x;
+      this.vertexes[i].y += this.y;
+      this.vertexes[i].z += this.z;
+    }
+  }
+}*/
+
+
+class Aircraft {
+  constructor(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.visible = true;
+    this.axis = {"x":0,"y":1,"z":0};
+    this.rad = 0;
+    this.throttle = 1;
+    this.exploded = false;
+    this.speed = {
+      "x":0,
+      "y":0,
+      "z":10
+    };
+    this.elevator = 0;
+    this.rudder = 0;
+    this.aileron = 0;
+    this.rotationSpeed = {
+      "x":0,
+      "y":0,
+      "z":0
+    }
+    this.pitch = 0;
+    
+    this.recentPosture = [[{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],
+                         [{"x":0,"y":1,"z":0},0,],];
+
+    this.vertexes = [];
+
+    this.edges = [];
+    
+    this.faces = [];
+    //胴体
+    this.faces.push([1,0,3,"#FFFFFF"]);
+    this.faces.push([3,2,1,"#FFFFFF"]);
+    this.faces.push([5,4,0,"#FFFFFF"]);
+    this.faces.push([0,1,5,"#FFFFFF"]);
+    this.faces.push([4,7,3,"#FFFFFF"]);
+    this.faces.push([3,0,4,"#FFFFFF"]);
+    this.faces.push([7,6,2,"#FFFFFF"]);
+    this.faces.push([2,3,7,"#FFFFFF"]);
+    this.faces.push([6,5,1,"#FFFFFF"]);
+    this.faces.push([1,2,6,"#FFFFFF"]);
+    this.faces.push([8,4,5,"#FFFFFF"]);
+    this.faces.push([8,7,4,"#FFFFFF"]);
+    this.faces.push([8,6,7,"#FFFFFF"]);
+    this.faces.push([8,5,6,"#FFFFFF"]);
+    this.faces.push([9,1,0,"#FFFFFF"]);
+    this.faces.push([9,0,3,"#FFFFFF"]);
+    this.faces.push([9,3,2,"#FFFFFF"]);
+    this.faces.push([9,2,1,"#FFFFFF"]);
+    //羽
+    this.faces.push([10,13,12,"#FFFFFF"]);
+    this.faces.push([10,12,13,"#FFFFFF"]);
+    this.faces.push([12,11,10,"#FFFFFF"]);
+    this.faces.push([12,10,11,"#FFFFFF"]);
+    this.faces.push([14,17,16,"#FFFFFF"]);
+    this.faces.push([14,16,17,"#FFFFFF"]);
+    this.faces.push([16,15,14,"#FFFFFF"]);
+    this.faces.push([16,14,15,"#FFFFFF"]);
+    //水平尾翼・垂直尾翼
+    this.faces.push([25,21,22,"#FFFFFF"]);
+    this.faces.push([25,22,21,"#FFFFFF"]);
+    this.faces.push([25,22,18,"#FFFFFF"]);
+    this.faces.push([25,18,22,"#FFFFFF"]);
+    this.faces.push([25,19,20,"#FFFFFF"]);
+    this.faces.push([25,20,19,"#FFFFFF"]);
+    this.faces.push([25,18,19,"#FFFFFF"]);
+    this.faces.push([25,19,18,"#FFFFFF"]);
+    this.faces.push([18,23,24,"#FFFFFF"]);
+    this.faces.push([18,24,23,"#FFFFFF"]);
+    this.faces.push([24,25,18,"#FFFFFF"]);
+    this.faces.push([24,18,25,"#FFFFFF"]);
+    //操縦席
+    this.faces.push([30,26,27,"#999999"]);
+    this.faces.push([30,27,28,"#999999"]);
+    this.faces.push([30,28,29,"#999999"]);
+    this.faces.push([30,29,26,"#999999"]);
+  }
+  update() {
+    this.vertexes = [];//胴体
+    this.vertexes.push(new Vertex(-10,10,30));
+    this.vertexes.push(new Vertex(10,10,30));
+    this.vertexes.push(new Vertex(10,-10,25));
+    this.vertexes.push(new Vertex(-10,-10,25));
+    this.vertexes.push(new Vertex(-10,10,-30));
+    this.vertexes.push(new Vertex(10,10,-30));
+    this.vertexes.push(new Vertex(10,-10,-30));
+    this.vertexes.push(new Vertex(-10,-10,-30));
+    this.vertexes.push(new Vertex(0,10,-90));
+    this.vertexes.push(new Vertex(0,5,45));
+    //羽
+    this.vertexes.push(new Vertex(10,10,12));
+    this.vertexes.push(new Vertex(70,10,12));
+    this.vertexes.push(new Vertex(70,10,-15));
+    this.vertexes.push(new Vertex(10,10,-15));
+    this.vertexes.push(new Vertex(-10,10,12));
+    this.vertexes.push(new Vertex(-70,10,12));
+    this.vertexes.push(new Vertex(-70,10,-15));
+    this.vertexes.push(new Vertex(-10,10,-15));
+    //水平尾翼・垂直尾翼
+    this.vertexes.push(new Vertex(0,10,-70));
+    this.vertexes.push(new Vertex(20,10,-80));
+    this.vertexes.push(new Vertex(20,10,-90));
+    this.vertexes.push(new Vertex(-20,10,-90));
+    this.vertexes.push(new Vertex(-20,10,-80));
+    this.vertexes.push(new Vertex(0,30,-79));
+    this.vertexes.push(new Vertex(0,30,-87));
+    this.vertexes.push(new Vertex(0,10,-90));
+    //操縦席
+    this.vertexes.push(new Vertex(0,10,5));
+    this.vertexes.push(new Vertex(8,10,-10));
+    this.vertexes.push(new Vertex(0,10,-30));
+    this.vertexes.push(new Vertex(-8,10,-10));
+    this.vertexes.push(new Vertex(0,18,-10));
+    for (let i = 0; i < this.vertexes.length; i++) {
+      this.vertexes[i] = rotate(this.axis,this.vertexes[i],this.rad);
+      this.vertexes[i].x += this.x;
+      this.vertexes[i].y += this.y;
+      this.vertexes[i].z += this.z;
+    }
+  }
+}
+
+class Ground {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.visible = "ground";
+
+
+    this.edges = [];
+    
+    this.faces = [];
+    for (let i = 0; i < 19; i++) {
+      this.faces.push([20,i,i+1]);
+    }
+    this.faces.push([20,19,0]);
+  }
+  update() {
+    this.x = cam.x;
+    this.y = 0;
+    this.z = cam.z;
+    this.vertexes = [];
+    for (let i = 0; i < (2*Math.PI); i += (Math.PI/10)) {
+    	this.vertexes.push(new Vertex(this.x + Math.cos(i)*30000, this.y, this.z + Math.sin(i)*30000));
+    }
+    this.vertexes.push(new Vertex(this.x, this.y, this.z));
+  }
+}
+  </script>
+  <script>
+    function aircraftPB() {
+  //推力と抗力
+  let thrust = aircraft.throttle*6;
+  let drag = {
+    "x":aircraft.speed.x/10,
+    "y":aircraft.speed.y/10,
+    "z":aircraft.speed.z/10
+  }
+
+  //揚力
+  let dirOfMov = {"x":aircraft.speed.x, "y":aircraft.speed.y, "z":aircraft.speed.z}
+  let length = Math.sqrt(dirOfMov.x**2 + dirOfMov.y **2 + dirOfMov.z ** 2);
+  dirOfMov.x /= length;
+  dirOfMov.y /= length;
+  dirOfMov.z /= length;
+  const pitchCos = ((dirOfMov.z)/(Math.sqrt(dirOfMov.x**2+dirOfMov.y**2+dirOfMov.z**2)))
+  const pitch = dirOfMov.y > 0 ? -Math.acos(pitchCos) : Math.acos(pitchCos);
+  aircraft.pitch = pitch * 180/Math.PI;
+  let lift = aircraft.speed.z * aircraft.speed.z * pitch;
+  if (Math.abs(pitch) > Math.PI/4) {
+    lift = 0;
+  }
+  
+  
+
+
+  let upwardForce = 0;
+
+  //重力
+  const vec = rotate(aircraft.axis, {"x":0,"y":-1,"z":0}, -aircraft.rad);
+  
+  const weight = {
+    "under":6.1 * -vec.y,
+    "right":6.1 * vec.x,
+    "front":6.1 * vec.z,
+  };
+  aircraft.weight = weight;
+  
+  upwardForce = lift - weight.under;
+  upwardForce = upwardForce - drag.y;
+  upwardForce *= 0.1;
+  if (!aircraft.landingFlag) {
+    thrust += weight.front;
+  }
+
+  aircraft.speed.z += (thrust - drag.z)/20;
+  aircraft.speed.y += upwardForce/20;
+  aircraft.speed.x += (weight.right - aircraft.speed.x)/20;
+  
+  //着陸処理
+  aircraft.landingFlag = false;
+  if (aircraft.y <= 10) {
+    let shock = 0;
+    shock -= rotate(aircraft.axis,aircraft.speed,aircraft.rad).y;
+    if (shock < 5) {
+      aircraft.y = 10;
+      aircraft.landingFlag = true;
+      let newVec = rotate(aircraft.axis,aircraft.speed,aircraft.rad);
+      if (newVec.y < 0) {
+        newVec.y = 0;
+      }
+      newVec = rotate(aircraft.axis,newVec,-aircraft.rad);
+      aircraft.speed = newVec;
+    }else{
+      aircraft.exploded = true;
+    }
+  }
+  if (aircraft.landingFlag) {
+    const localZAxis = getLocalZAxis(aircraft.axis, aircraft.rad);
+    let rad1 = Math.atan(localZAxis.y/Math.sqrt(localZAxis.x**2+localZAxis.z**2));
+
+    if (rotate(aircraft.axis,{"x":0,"y":0,"z":1},aircraft.rad).y < -0.05 || aircraft.speed.z < 3 || aircraft.elevator !== -1) {
+      aircraft.rotationSpeed.x = -rad1/50;
+    }else{
+      let elevLift = aircraft.speed.z * aircraft.elevator / 10000;
+      if (aircraft.speed.z < 3) {elevLift = 0};
+      aircraft.rotationSpeed.x += (-(aircraft.speed.y/10000)-(elevLift) - aircraft.rotationSpeed.x)/20;
+    }
+
+    const localXAxis = getLocalXAxis(aircraft.axis, aircraft.rad);
+    let rad2 = Math.atan(localXAxis.y/Math.sqrt(localXAxis.x**2+localXAxis.z**2));
+
+    aircraft.rotationSpeed.z = rad2/20;
+  }
+  //斜め着陸爆破判定
+  {
+    const localXAxis = getLocalXAxis(aircraft.axis, aircraft.rad);
+    let rad2 = Math.atan(localXAxis.y/Math.sqrt(localXAxis.x**2+localXAxis.z**2));
+    if (aircraft.y < 70 && (Math.abs(rad2) > Math.PI/6  || getLocalYAxis(aircraft.axis,aircraft.rad).y < 0)) {
+      aircraft.exploded = true;
+    }
+  }
+
+  //移動（前）
+  let localZAxis = getLocalZAxis(aircraft.axis, aircraft.rad);
+  aircraft.x += localZAxis.x * aircraft.speed.z;
+  aircraft.y += localZAxis.y * aircraft.speed.z;
+  aircraft.z += localZAxis.z * aircraft.speed.z;
+
+  //移動（縦)
+  let localYAxis = getLocalYAxis(aircraft.axis, aircraft.rad);
+  aircraft.x += localYAxis.x * aircraft.speed.y;
+  aircraft.y += localYAxis.y * aircraft.speed.y;
+  aircraft.z += localYAxis.z * aircraft.speed.y;
+
+  //移動（横）
+  let localXAxis = getLocalXAxis(aircraft.axis, aircraft.rad);
+  aircraft.x += localXAxis.x * aircraft.speed.x;
+  aircraft.y += localXAxis.y * aircraft.speed.x;
+  aircraft.z += localXAxis.z * aircraft.speed.x;
+  
+  
+
+  //回転
+  //クォータニオンを軸と角度に戻す(外積を計算する(クォータニオンを作る(ローカルy軸,0.01),クォータニオンを作る(今の軸,今の角度)))
+  //エレベーター
+  if (!aircraft.landingFlag) {
+    let elevLift = aircraft.speed.z * aircraft.elevator / 4000;
+    if (aircraft.speed.z < 3) {elevLift = 0};
+    aircraft.rotationSpeed.x += (-(aircraft.speed.y/10000)-(elevLift) - aircraft.rotationSpeed.x)/20;
+  }
+  if (aircraft.rad !== 0 || aircraft.rotationSpeed.x !== 0) {
+    let newAxisAndRad = returnToAxisAndRad(calcQuaternion(makeQuaternion(getLocalXAxis(aircraft.axis, aircraft.rad), -aircraft.rotationSpeed.x), makeQuaternion(aircraft.axis, aircraft.rad)));
+    aircraft.axis = newAxisAndRad[0];
+    aircraft.rad = newAxisAndRad[1];
+  }
+
+  //ラダー
+  let rudderLift = aircraft.speed.z * aircraft.rudder / 8000;
+  aircraft.rotationSpeed.y += (-(aircraft.speed.x/10000)-(rudderLift) - aircraft.rotationSpeed.y)/20;
+  if (aircraft.rad !== 0 || aircraft.rotationSpeed.y !== 0) {
+    let newAxisAndRad = returnToAxisAndRad(calcQuaternion(makeQuaternion(getLocalYAxis(aircraft.axis, aircraft.rad), -aircraft.rotationSpeed.y), makeQuaternion(aircraft.axis, aircraft.rad)));
+    aircraft.axis = newAxisAndRad[0];
+    aircraft.rad = newAxisAndRad[1];
+  }
+
+  //エルロン
+  if (!aircraft.landingFlag) {
+    let aileronLift = aircraft.speed.z * aircraft.aileron / 2500;
+    aircraft.rotationSpeed.z += (-(aileronLift) - aircraft.rotationSpeed.z)/20;
+  }
+  if (aircraft.rad !== 0 || aircraft.rotationSpeed.z !== 0) {
+    let newAxisAndRad = returnToAxisAndRad(calcQuaternion(makeQuaternion(getLocalZAxis(aircraft.axis, aircraft.rad), -aircraft.rotationSpeed.z), makeQuaternion(aircraft.axis, aircraft.rad)));
+    aircraft.axis = newAxisAndRad[0];
+    aircraft.rad = newAxisAndRad[1];
+  }
+}
+  </script>
+  <script>
+    class Quaternion {
+  constructor() {
+    this.w = 0;
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+  }
+}
+
+class Vector {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+  }
+}
+
+function makeQuaternion(vector,rad) {
+  let result = new Quaternion();
+  let length;
+
+  length = Math.sqrt(vector.x**2 + vector.y**2 + vector.z**2);
+  let normalVec = new Vector();
+  normalVec.x = vector.x/length;
+  normalVec.y = vector.y/length;
+  normalVec.z = vector.z/length;
+  
+  let halfSin = Math.sin(rad/2);
+  let halfCos = Math.cos(rad/2);
+
+  result.w = halfCos;
+  result.x = normalVec.x * halfSin;
+  result.y = normalVec.y * halfSin;
+  result.z = normalVec.z * halfSin;
+
+  return result;
+}
+
+function returnToAxisAndRad(q) {
+  let axis = new Vector();
+  let rad;
+  let halfRad = Math.acos(q.w);
+  let halfSin = Math.sin(halfRad);
+  if (q.w === 1) {
+    axis.x = q.x;
+    axis.y = q.y;
+    axis.z = q.z;
+  }else{
+    axis.x = q.x/halfSin;
+    axis.y = q.y/halfSin;
+    axis.z = q.z/halfSin;
+  }
+  rad = halfRad*2;
+  return [axis,rad];
+}
+  
+function calcQuaternion(q1,q2) {
+  let result = new Quaternion();
+  let num;
+  num = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
+  result.w = num;
+  num = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
+  result.x = num;
+  num = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
+  result.y = num;
+  num = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
+  result.z = num;
+
+  return result;
+}
+
+function rotate(axis,pos,rad) {
+  let axisQuat = makeQuaternion(axis,rad);
+  let posQuat = new Quaternion();
+  posQuat.x = pos.x;
+  posQuat.y = pos.y;
+  posQuat.z = pos.z;
+  /*if (Math.abs(rad) < 0.00001) {
+    let result = new Vector();
+    result.x = pos.x;
+    result.y = pos.y;
+    result.z = pos.z;
+    return result;
+  }else*/{
+    let resultQuat;
+    let result = new Vector();
+  
+    let conjugate = new Quaternion();
+    conjugate.w = axisQuat.w;
+    conjugate.x = -axisQuat.x;
+    conjugate.y = -axisQuat.y;
+    conjugate.z = -axisQuat.z;
+  
+    resultQuat = calcQuaternion(axisQuat,posQuat);
+    resultQuat = calcQuaternion(resultQuat,conjugate);
+  
+    result.x = resultQuat.x;
+    result.y = resultQuat.y;
+    result.z = resultQuat.z;
+  
+    return result;
+  }
+}
+
+function synthOfRotation(q1,q2) {
+  return calcQuaternion(q2,q1);
+}
+
+function vectorProduct(v1,v2) {
+  let result = new Vector();
+  result.x = v1.y*v2.z - v1.z*v2.y;
+  result.y = v1.z*v2.x - v1.x*v2.z;
+  result.z = v1.x*v2.y - v1.y*v2.x;
+  return result;
+}
+
+function getLocalYAxis(axis,rad) {
+  return rotate(axis,{"x":0,"y":1,"z":0},rad);
+}
+
+function getLocalXAxis(axis,rad) {
+  return rotate(axis,{"x":1,"y":0,"z":0},rad);
+}
+
+function getLocalZAxis(axis,rad) {
+  return rotate(axis,{"x":0,"y":0,"z":1},rad);
+}
+  </script>
+  <script>
+    let ctx = document.getElementById("main").getContext("2d");
+ctx.translate(400, 300);
+
+let cam = {
+  "axis": { "x": 0, "y": 1, "z": 0 },
+  "rad": 0,
+  "x": 0,
+  "y": 40,
+  "z": 0
+}
+
+let objects = [];
+
+let coolTime = 15;
+
+let gyroMode = false;
+
+class Vertex {
+  constructor(x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+}
+
+let ground = new Ground();
+let bullets = [];
+let targets = [];
+let blasts = [];
+//objects.push(new Island());
+//objects.push(new Tree(0, 110, -300));
+targets.push(new Target(0, 500, 25600));
+objects.push(targets[0]);
+//objects.push(new Cloud(0, 10000, 10000));
+let aircraft = new Aircraft(0, 1000, 0);
+//objects.push(new Cube(0,100,800,60));
+//objects.push(new Aircraft2(0,100,800));
+objects.push(aircraft);
+
+//draw();
+
+
+function mainLoop() {
+
+  if (gyroMode) {
+    ctrWithGyro();
+  }else{
+    if (key.e) {
+      aircraft.rudder = 1;
+    }else if (key.q) {
+      aircraft.rudder = -1;
+    }else{
+      aircraft.rudder = 0;
+    }
+    if (key.a) {
+      aircraft.aileron = 1;
+    }else if (key.d) {
+      aircraft.aileron = -1;
+    }else{
+      aircraft.aileron = 0;
+    }
+    if (key.w) {
+      aircraft.elevator = 1;
+    }else if (key.s) {
+      aircraft.elevator = -1;
+    }else{
+      aircraft.elevator = 0;
+    }
+    
+    if (key.i) {
+      if (aircraft.throttle < 1) {
+        aircraft.throttle += 0.01;
+      }
+    }
+    if (key.k) {
+      if (aircraft.throttle > 0) {
+        aircraft.throttle -= 0.01;
+      }
+    }
+  }
+   
+  aircraftPB();
+
+  if (!aircraft.exploded) {
+    if (coolTime > 0) {
+      coolTime--;
+    }
+    if (key.j && coolTime <= 0) {
+      let vec = getLocalZAxis(aircraft.axis,aircraft.rad);
+      vec.x *= 100;
+      vec.y *= 100;
+      vec.z *= 100;
+      let add = rotate(aircraft.axis,aircraft.speed,aircraft.rad);
+      vec.x += add.x;
+      vec.y += add.y;
+      vec.z += add.z;
+      bullets.push(new Bullet(aircraft.x, aircraft.y, aircraft.z, vec));
+      objects.push(bullets[bullets.length-1]);
+      coolTime = 10;
+    }
+    
+    aircraft.update();
+    aircraft.recentPosture.shift();
+    aircraft.recentPosture.push([aircraft.axis, aircraft.rad]);
+    let newCamPos = rotate(aircraft.recentPosture[0][0], { "x": 0, "y": 50, "z": -300 }, aircraft.recentPosture[0][1]);
+    cam.x = aircraft.x + newCamPos.x;
+    cam.y = aircraft.y + newCamPos.y;
+    if (cam.y < 10) {
+      cam.y = 10;
+    }
+    cam.z = aircraft.z + newCamPos.z;
+    cam.axis = aircraft.recentPosture[0][0];
+    cam.rad = aircraft.recentPosture[0][1];
+    
+    ground.update();
+  
+    for (let i = 0; i < bullets.length; i++) {
+      bullets[i].x += bullets[i].vec.x;
+      bullets[i].y += bullets[i].vec.y;
+      bullets[i].z += bullets[i].vec.z;
+      bullets[i].vertexes = [];
+      bullets[i].vertexes.push(new Vertex(bullets[i].x,bullets[i].y,bullets[i].z));
+      let relX = bullets[i].x-aircraft.x;
+      let relY = bullets[i].y-aircraft.y;
+      let relZ = bullets[i].z-aircraft.z;
+      //地面と距離から判定
+      if (Math.sqrt(relX**2+relY**2+relZ**2) > 30000 || bullets[i].y < 3) {
+        bullets[i].dead = true;
+        bullets.splice(i,1);
+        i--;
+      }else{
+        for (let j = 0; j < targets.length; j++) {
+          relX = bullets[i].x-targets[j].x;
+          relY = bullets[i].y-targets[j].y;
+          relZ = bullets[i].z-targets[j].z;
+          if (Math.sqrt(relX**2+relY**2+relZ**2) < 400) {
+            for (let k = 0; k < 20; k++) {
+              blasts.push(new Blast(targets[j].x,targets[j].y,targets[j].z,400,70));
+              objects.push(blasts[blasts.length-1]);
+            }
+            targets[j].dead = true;
+            targets.splice(j,1);
+            j--;
+            bullets[i].dead = true;
+            bullets.splice(i,1);
+            i--;
+  
+            targets.push(new Target(aircraft.x+rndInt(-20000,20000), rndInt(1000,3000), aircraft.z+rndInt(-10000,10000)));
+            objects.push(targets[targets.length-1]);
+            break;
+          }
+        }
+      }
+    }
+  
+    for (let i = 0; i < blasts.length; i++) {
+      let blast = blasts[i];
+      blast.prog += 0.02;
+      if (blast.prog <= 1) {
+        blast.x = blast.center.x + (blast.vec.x * (1-(1-blast.prog)**2));
+        blast.y = blast.center.y + (blast.vec.y * (1-(1-blast.prog)**2));
+        blast.z = blast.center.z + (blast.vec.z * (1-(1-blast.prog)**2));
+        const size = blast.size * ((1-blast.prog)**2);
+        blast.vertexes = [];
+        blast.vertexes.push(new Vertex(blast.x,blast.y,blast.z));
+        blast.faces = [];
+        blast.faces.push([0,size,"#FF0000"])
+      }
+      
+      if (blast.prog > 1 || blast.y < 10) {
+        blast.dead = true;
+        blasts.splice(i,1);
+        i--;
+      }
+    }
+    
+    for (let i = 0; i < objects.length; i++) {
+      if (objects[i].dead) {
+        objects.splice(i,1);
+        i--;
+        break;
+      }
+      
+      let relX = objects[i].x-aircraft.x;
+      let relY = objects[i].y-aircraft.y;
+      let relZ = objects[i].z-aircraft.z;
+      //地面と距離から判定
+      if (Math.sqrt(relX**2+relY**2+relZ**2) < 30000 || objects[i].visible === "ground") {
+        objects[i].visible = true;
+      }else{
+        objects[i].visible = false;
+      }
+    }
+    
+    draw();
+    requestAnimationFrame(mainLoop);
+  }else{
+    drawGameOver();
+  }
+
+}
+
+mainLoop();
+
+
+function rndInt(min,max) {
+  return Math.floor( Math.random() * (max + 1 - min) ) + min;
+}
+  </script>
+  <style>
+    html {
+  height: 100%;
+  width: 100%;
+}
+
+#main {
+  border:solid 2px black;
+}
+  </style>
+</body>
+
+</html>
+  </body>
+
+</html>
