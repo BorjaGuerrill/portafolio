@@ -1,4 +1,0 @@
-Primera pagina web:
-https://www.w3docs.com/snippets/java/how-can-i-convert-my-java-program-to-an-exe-file.html#:~:text=There%20are%20several%20ways%20to,.net%2Fprojects%2Flaunch4j%2F
-Descargable:
-https://sourceforge.net/projects/launch4j/files/latest/download
