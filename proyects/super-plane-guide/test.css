@@ -1,0 +1,11 @@
+.parent{
+  background-color:lightblue;
+  display:flex;
+  justify-content:space-evenly;
+  padding:2%;
+  flex-direction:column-reverse;
+}
+.parent div{
+  background-color:white;
+  padding:2%;
+}
