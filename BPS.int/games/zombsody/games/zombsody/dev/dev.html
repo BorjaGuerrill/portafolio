@@ -1,0 +1,86 @@
+<!--
+______ _____   ___  _   _  _____ _____ _____          
+|  _  \  ___| |_  || | | ||  _  /  ___/  ___|         
+| | | | |__     | || | | || | | \ `--.\ `--.  ___ ____
+| | | |  __|    | || | | || | | |`--. \`--. \/ __|_  /
+| |/ /| |___/\__/ /\ \_/ /\ \_/ /\__/ /\__/ / (__ / / 
+|___/ \____/\____/  \___/  \___/\____/\____(_)___/___|
+This website utilises DEJVCore v4 by (c) DEJVOSS Productions (https://dejvoss.cz);
+-->
+
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <title>DEJVOSS - Zombsody Dev</title>
+
+    <link rel="stylesheet" href="/files/styles.css">
+    <link rel="shortcut icon" href="/files/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=0.6" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta content="DEJVOSS.cz" property="og:title" />
+    <meta content="Welcome to Dejvoss' cave. Enjoy your stay!" property="og:description" />
+    <meta content="https://dejvoss.cz" property="og:url" />
+    <meta content="https://dejvoss.cz/files/smallAvatar.png" property="og:image" />
+    <meta content="dejvoss.cz" property="og:site_name" />
+    <meta content="#E6D119" data-react-helmet="true" name="theme-color" />
+</head>
+
+<body>
+    <center>
+        <header>
+            <div class="topnav">
+                <a id="logo" href="/">Home</a>
+                <a href="/">Home</a>
+                <a href="/news">News</a>
+                <a href="/games">Games</a>
+                <a href="/project">Other</a>
+                <a href="/contact">Contact</a>
+            </div>
+        </header>
+    </center>
+
+    <br><br>
+
+    <!--<div class="announcement">
+        Warning, the website is currently under maintenance! The issue is not on your receiver.<br>
+    </div>-->
+    <h3>Zombsody Dev</h3>
+    <ul>
+        <canvas id="unity-canvas" width=700 height=700
+  style="width: 700px; height: 700px; background: url('/media/zombsody_webgl_dev/webgl.jpg') center / cover"></canvas>
+<script src="/media/zombsody_webgl_dev/webgl.loader.js"></script>
+<script>
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    // Mobile device style: fill the whole browser client area with the game canvas:
+    var meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  }
+
+  createUnityInstance(document.querySelector("#unity-canvas"), {
+    dataUrl: "/media/zombsody_webgl_dev/webgl.data",
+    frameworkUrl: "/media/zombsody_webgl_dev/webgl.framework.js",
+    codeUrl: "/media/zombsody_webgl_dev/webgl.wasm",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "DEJVOSS",
+    productName: "Zombsody 2D",
+    productVersion: "0.1.3-Pre",
+    // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+    // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+  });
+</script>
+<p>This is a development version of Zombsody; expect more bugs than in the stable builds!</p>
+    </ul>
+    <hr>
+
+    <div class="footer">
+        <p>Copyright DEJVOSS 2019-2023. All rights reserved.</p>
+    </div>
+
+</body>
+
+</html>
