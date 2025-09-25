@@ -1,0 +1,204 @@
+body {
+  font: 16px/1.4 "Helvetica Neue", sans-serif;
+  color: #d7d7d7;
+  background-color: #111111;
+  background-image: url("bg_main.png");
+}
+
+nav {
+  display: flex;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 48px;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  background-color: #01335c;
+  background-image: url("bg_top.png");
+}
+
+.logo img {
+  width: 275px;
+  margin-top: -12px;
+  margin-left: -16px;
+}
+
+nav a,
+nav a:active,
+nav a:visited {
+  padding: 14px 16px;
+  font-size: 17px;
+  color: #f2f2f2;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: #c0c0c0;
+}
+
+.wrap {
+  max-width: 700px;
+  margin: 0 auto;
+  margin-top: 60px;
+}
+
+.content {
+  padding-left: 40px;
+}
+
+a,
+a:active,
+a:visited {
+  color: #aaaaff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #babaff;
+}
+
+.announcement {
+  text-align: center;
+  font-size: 15px;
+  color: #ff0000;
+  margin-top: -3px;
+  margin-bottom: -20px;
+}
+
+.announcement a {
+  color: #ff0000;
+  text-decoration: underline;
+}
+
+.spoiler {
+  background-color: #111111;
+  color: #111111;
+}
+
+.spoiler:hover {
+  color: #d7d7d7;
+  background-color: transparent;
+}
+
+code {
+  display: block;
+  background-color: #111111;
+  color: #00ff00;
+  padding-left: 5px;
+  font-size: 16px;
+}
+
+hr {
+  width: 100%;
+}
+
+#unity-canvas {
+  border: 5px solid rgb(0, 0, 0);
+  display: block;
+  margin: 0 auto;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: #707070;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+footer hr {
+  margin-bottom: 10px;
+}
+
+.yt-vid {
+  width: 560px;
+  height: 315px;
+  margin: 0 auto;
+  display: block;
+  padding-bottom: 6px;
+}
+
+.img {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  width: 75%;
+}
+
+.img-left {
+  float: left;
+  width: 70%;
+  margin: 0 15px 20px 0;
+}
+
+.img-right {
+  float: right;
+  width: 70%;
+  margin: 0 0 20px 15px;
+}
+
+@media screen and (max-width: 828px) {
+  body {
+    font-size: 23px;
+    background-size: 64px;
+  }
+
+  nav {
+    background-size: 64px;
+    height: 64px;
+  }
+
+  nav a,
+  nav a:active,
+  nav a:visited {
+    padding: 14px 3%;
+    font-size: 22px;
+  }
+
+  .content {
+    padding-right: 20px;
+  }
+
+  .announcement {
+    font-size: 20px;
+  }
+
+  .logo {
+    display: none;
+    /* background-size: 100%; */
+    /* width: 10%; */
+    /* background-position-x: ; */
+  }
+
+  .img-left,
+  .img-right {
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 75%;
+  }
+
+  .yt-vid {
+    width: 100%;
+  }
+
+  footer {
+    font-size: 17px;
+  }
+
+  .wrap {
+    margin-top: 75px;
+  }
+}
+
+@media screen and (max-width: 560px) {
+
+  nav a,
+  nav a:active,
+  nav a:visited {
+    padding: 14px 2%;
+  }
+}
