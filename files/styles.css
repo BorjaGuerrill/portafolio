@@ -4,11 +4,6 @@ body {
   background-color: #111111;
   background-image: url("bg_main.png");
 }
-h1{
-  font-size:100000px;
-  color:red;
-  font-style:italic;
-}
 nav {
   display: flex;
   left: 0;
